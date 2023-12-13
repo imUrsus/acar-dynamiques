@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Application Todo</title>
+</head>
+<body>
+  <h1>ACAR</h1>
+    
+    <div>
+      <h2>Toutes les taches</h2> 
+      <form id="my_form" method="POST" action="/">
+      {% for tache in taches %}
+        <label for="{{tache['label']}}">label{{tache['id']}}</label>
+        <input type="checkbox" id="id{{tache['id']}}" name="name{{tache['id']}}" onchange="document.getElementById('my_form').submit()" {% if tache['accomplie'] %}checked{% endif %}>{{tache['libelle']}}<br>
+        <p> {{tache}}</p> 
+      {% endfor %}
+     
+    </form>
+       
+</body>
+</html>
