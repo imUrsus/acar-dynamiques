@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %} ACAR1 page2  {% endblock %}</h1>
+<a href="{{ url_for('routes.f_acar1_1') }}">Acar1</a>
+
+<h1>Page 1</h1>
+
+<h2>Chronomètre général</h2>
+
+<p><span id="valeur_chrono_general">{{valeur_chrono_general}}</span></p>
+
+<h2>Sabliers</h2>
+
+<h1>compte à rebours massage : </h1>
+    <button id="start_s_massage">Démarrer le compte à rebours massage cardiaque</button>
+    <p>Temps écoulé pour le massage cardiaque : <span id="temps_restant_s_massage">{{temps_restant_s_massage }}</span> secondes restantes</p>
+    
+<h1>compte à rebours massage : </h1>
+    <button id="start_s_injection">Démarrer le compte à rebours Injection</button>
+    <p>Temps écoulé pour le massage cardiaque : <span id="temps_restant_s_injection">{{temps_restant_s_injection }}</span> secondes restantes</p>
+    
+    
+<script>
+
+        
+        function start_s_massage() {
+            fetch('/start_s_massage')  
+                .then(response => response.json())
+                .then(data => {
+                    
+                    document.getElementById('temps_restant_s_massage').innerText =data.temps_restant_s_massage ;
+                });
+        }
+        function start_s_injection() {
+            fetch('/start_s_injection')  
+                .then(response => response.json())
+                .then(data => {
+                    
+                    document.getElementById('temps_restant_s_injection').innerText =data.temps_restant_s_injection ;
+                });
+        }
+        function updateChrono_general() {
+            fetch('/maj_chrono_general')  
+                .then(response => response.json())
+                .then(data => {
+                   
+                    document.getElementById('valeur_chrono_general').innerText = data.valeur_chrono_general ;
+                });
+        }
+
+        function update_s_massage() {
+            fetch('/maj_s')  
+                .then(response => response.json())
+                .then(data => {
+                    
+                    document.getElementById('temps_restant_s_massage').innerText = data.temps_restant_s_massage ;
+                });
+        }
+
+        function update_s_injection() {
+            fetch('/maj_s')  
+                .then(response => response.json())
+                .then(data => {
+                   
+                    document.getElementById('temps_restant_s_injection').innerText = data.temps_restant_s_injection ;
+                });
+        }
+
+        setInterval(() => {
+            fetch('/maj_s')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.s_massageRunning === 'true') {
+                    update_s_massage();
+                }
+            })
+        }, 1000);
+
+        setInterval(() => {
+            fetch('/maj_s')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.s_injectionRunning === 'true') {
+                    update_s_injection();
+                }
+            })
+        }, 1000);
+
+
+        setInterval(() => {
+            
+            updateChrono_general();
+            
+        }, 1000);
+
+        document.getElementById('start_s_massage').addEventListener('click', function() {
+            // Lorsque le bouton est cliqué, changer l'état du timer et démarrer le compte à rebours
+            s_massageRunning = 'true';
+            start_s_massage();
+        });
+
+        document.getElementById('start_s_injection').addEventListener('click', function() {
+            // Lorsque le bouton est cliqué, changer l'état du timer et démarrer le compte à rebours
+            s_injectionRunning = 'true';
+            start_s_injection();
+        });
+
+    </script>
+{% endblock %}

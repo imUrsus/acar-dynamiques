@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% block title %} ACAR1 {% endblock %}</h1>
+<a href="{{ url_for('routes.f_acar1_1') }}">Page1</a>
+<a href="{{ url_for('routes.f_acar1_2') }}">Page2</a>
+
+
+
+
+{% for tache in donnees if tache['slide'] == 2 %}
+    
+    {% if tache['sablier']: %}
+    <form onsubmit="modifier(event, {{tache['id']}})">
+        <div class="d-grid gap-2 col-6 mx-auto">
+            <button type="submit"   class="btn btn-primary accomplie-{{ tache['accomplie'] }}">
+                {{ tache['label'] }}
+            </button>
+        </div>
+        {{ tache['etat_sablier'] }}
+        <div>
+
+
+        </div>
+    </form>
+    {% else %}
+    <form onsubmit="modifier(event, {{tache['id']}})">
+        <div class="d-grid gap-2 col-6 mx-auto">
+            <button id="button_{{ tache['id'] }}" type="submit" class="btn btn-primary accomplie-{{ tache['accomplie'] }}">
+                {{ tache['label'] }}
+            </button>
+        </div>
+        <span id = "id_sablier{{tache['id']}}">{{ tache['etat_sablier'] }}</span> 
+        <div>
+
+
+        </div>
+    </form>
+    {% endif %}
+{% endfor %}
+
+
+<h2>Chronomètre général</h2>
+
+<p><span id="valeur_chrono_general">{{valeur_chrono_general}}</span></p>
+
+
+
+<script>
+     function modifier(event, tache_id) {
+        event.preventDefault();
+        fetch('/modifier/' + tache_id, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Réponse du serveur :', data);  // Débogage
+
+            // Parcourez la liste de dictionnaires pour trouver celui avec l'ID correspondant
+            var donnees = data.donnees;
+            var accomplieValue = -1;  // Valeur par défaut, assurez-vous qu'elle ne correspond pas à une valeur valide
+
+            for (var i = 0; i < donnees.length; i++) {
+                if (donnees[i].id === tache_id) {
+                    accomplieValue = donnees[i].accomplie;
+                    break;  // Sortez de la boucle dès que vous trouvez le dictionnaire
+                }
+            }
+
+            // Assurez-vous que l'ID correspond à un élément dans le DOM
+            var spanElement = document.getElementById(tache_id);
+
+            if (spanElement && accomplieValue !== -1) {
+                spanElement.innerText = accomplieValue;
+            } else {
+                console.error('Élément avec l\'ID ' + tache_id + ' non trouvé ou valeur accomplie invalide.');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la requête fetch :', error);
+        });
+    }
+
+    function maj() {
+        
+        fetch('/maj')  
+        .then(response => response.json())
+        .then(data => {
+            console.log('Réponse du serveur :', data);  // Débogage
+            var donnees = data.donnees;
+            var sabliers = data.sabliers;
+            for (var i = 0; i < sabliers.length; i++) {
+                
+                if (sabliers[i].isRunning === "true") {
+                    id = "id_sablier"+sabliers[i].id;
+                    
+                    document.getElementById(id).innerText = data.sabliers[i].temps_restant ;
+                }
+
+            }
+
+            for (var i = 0; i < donnees.length; i++) {
+                var tache_id = data.donnees[i].id;
+                var accomplieValue = data.donnees[i].accomplie;
+                var buttonElement = document.getElementById('button_' + tache_id);
+               
+
+                if (buttonElement && accomplieValue !== undefined) {
+                    // Mise à jour de la classe CSS du bouton
+                    buttonElement.classList.remove('accomplie-0', 'accomplie-1');
+                    buttonElement.classList.add('accomplie-' + accomplieValue);
+                } else {
+                    console.error('Bouton avec l\'ID button_' + tache_id + ' non trouvé ou valeur accomplie invalide.');
+                }
+                                    
+            }
+        });
+    }
+
+        function updateChrono_general() {
+            fetch('/maj_chrono_general')  
+                .then(response => response.json())
+                .then(data => {
+                   
+                    document.getElementById('valeur_chrono_general').innerText = data.valeur_chrono_general ;
+                });
+        }
+
+
+        setInterval(() => {
+            
+            updateChrono_general();
+            
+        }, 1000);
+
+        setInterval(() => {
+            
+            maj();
+            
+        }, 1000);
+
+
+
+</script>
+
+{% endblock %}
